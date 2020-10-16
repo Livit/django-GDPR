@@ -209,7 +209,7 @@ class LegalReason(SmartModel):
         u'source_object_content_type', u'source_object_id'
     )
 
-    class Meta:
+    class Meta(object):
         ordering = (u'-created_at',)
         unique_together = (u'purpose_slug', u'source_object_content_type', u'source_object_id')
 
@@ -274,7 +274,7 @@ class LegalReasonRelatedObject(SmartModel):
         u'object_content_type', u'object_id'
     )
 
-    class Meta:
+    class Meta(object):
         ordering = (u'-created_at',)
         unique_together = (u'legal_reason', u'object_content_type', u'object_id')
 
@@ -323,7 +323,7 @@ class AnonymizedData(SmartModel):
         on_delete=models.SET_NULL
     )
 
-    class Meta:
+    class Meta(object):
         ordering = (u'-created_at',)
         unique_together = (u'content_type', u'object_id', u'field')
 

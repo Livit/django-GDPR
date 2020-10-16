@@ -49,12 +49,12 @@ class AnonymizationModelMixin(object):
             AnonymizedData.objects.filter(object_id=obj_id, content_type=self.content_type).delete()
         except Error, e:
             # Better to just have some leftovers then to fail
-            warnings.warn('An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
+            warnings.warn(u'An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
         try:
             LegalReasonRelatedObject.objects.filter(object_id=obj_id, object_content_type=self.content_type).delete()
         except Error, e:
             # Better to just have some leftovers then to fail
-            warnings.warn('An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
+            warnings.warn(u'An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
 
 
 class AnonymizationModel(AnonymizationModelMixin, Model):
