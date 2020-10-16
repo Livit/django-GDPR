@@ -41,7 +41,9 @@ class ModelAnonymizerMeta(type):
         if not parents or not hasattr(new_obj, u'Meta'):
             return new_obj
 
-        fields = getattr(new_obj, u'fields', {})
+        fields = getattr(new_obj, 'fields', {})
+        if not fields:
+            fields = {}
 
         for name, obj in attrs.items():
             if isinstance(obj, FieldAnonymizer):

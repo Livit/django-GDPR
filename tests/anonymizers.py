@@ -1,13 +1,12 @@
 # -*- coding: future_fstrings -*-
 from __future__ import absolute_import
 from gdpr import anonymizers
-from tests.models import Customer, Note
+from tests.models import Customer
 
 
 class CustomerAnonymizer(anonymizers.ModelAnonymizer):
     first_name = anonymizers.MD5TextFieldAnonymizer()
     last_name = anonymizers.MD5TextFieldAnonymizer()
-    notes = anonymizers.ReverseGenericRelationAnonymizer(u'tests', u'Note')
 
     def get_encryption_key(self, obj):
         return (u"{}::{}::"

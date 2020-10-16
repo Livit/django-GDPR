@@ -33,7 +33,7 @@ class AppLoader(BaseLoader):
             try:
                 import_module(u'{}.{}'.format((app.name), (self.module_name)))
             except ImportError, ex:
-                if force_text(ex) != u'No module named \'{}.{}\''.format((app.name), (self.module_name)):
+                if u'No module named' not in force_text(ex):
                     raise ex
 
 

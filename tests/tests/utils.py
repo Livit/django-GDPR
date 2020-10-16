@@ -1,8 +1,7 @@
 from __future__ import absolute_import
-from typing import Callable
+from __future__ import print_function
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Model
 from django.test import TestCase
 
 from gdpr.models import AnonymizedData
@@ -13,7 +12,7 @@ class NotImplementedMixin(TestCase):
         try:
             func(*args, **kwargs)
         except AssertionError, exc:
-            print u"NOT IMPLEMENTED:", self.id(), exc
+            print(u"NOT IMPLEMENTED: {} {}".format(self.id(), exc))
         else:
             raise AssertionError(u"Function Implemented successfully!!")
 

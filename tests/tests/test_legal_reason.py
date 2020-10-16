@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from faker import Faker
@@ -36,12 +37,12 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
         anon_customer = Customer.objects.get(pk=self.customer.pk)
 
         self.assertNotEqual(anon_customer.first_name, CUSTOMER__FIRST_NAME)
-        self.assertAnonymizedDataExists(anon_customer, "first_name")
+        self.assertAnonymizedDataExists(anon_customer, u"first_name")
         self.assertNotEqual(anon_customer.last_name, CUSTOMER__LAST_NAME)
-        self.assertAnonymizedDataExists(anon_customer, "last_name")
+        self.assertAnonymizedDataExists(anon_customer, u"last_name")
         # make sure only data we want were anonymized
         self.assertEqual(anon_customer.primary_email_address, CUSTOMER__EMAIL)
-        self.assertAnonymizedDataNotExists(anon_customer, "primary_email_address")
+        self.assertAnonymizedDataNotExists(anon_customer, u"primary_email_address")
 
     def test_renew_legal_reason(self):
         legal = LegalReason.objects.create_consent(FIRST_AND_LAST_NAME_SLUG, self.customer)
@@ -52,8 +53,8 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
 
         # Non reversible anonymization
         self.assertNotEqual(anon_customer.first_name, CUSTOMER__FIRST_NAME)
-        self.assertAnonymizedDataExists(anon_customer, "first_name")
+        self.assertAnonymizedDataExists(anon_customer, u"first_name")
         self.assertNotEqual(anon_customer.last_name, CUSTOMER__LAST_NAME)
-        self.assertAnonymizedDataExists(anon_customer, "last_name")
+        self.assertAnonymizedDataExists(anon_customer, u"last_name")
 
 # TODO add tests for our particular business case here

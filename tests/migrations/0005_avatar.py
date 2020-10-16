@@ -28,14 +28,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='account',
             name='number',
-            field=models.CharField(blank=True, max_length=256, null=True,
-                                   validators=[tests.validators.BankAccountValidator]),
+            field=models.CharField(blank=True, max_length=256, null=True),
         ),
         migrations.AlterField(
             model_name='customer',
             name='personal_id',
-            field=models.CharField(blank=True, max_length=10, null=True,
-                                   validators=[tests.validators.CZBirthNumberValidator]),
+            field=models.CharField(blank=True, max_length=10, null=True),
         ),
         migrations.AddField(
             model_name='avatar',
