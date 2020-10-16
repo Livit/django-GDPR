@@ -4,7 +4,7 @@ import warnings
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Model, QuerySet
+from django.db.models import Model
 from django.db.utils import Error
 
 from gdpr.models import AnonymizedData, LegalReason, LegalReasonRelatedObject
@@ -48,12 +48,12 @@ class AnonymizationModelMixin(object):
             AnonymizedData.objects.filter(object_id=obj_id, content_type=self.content_type).delete()
         except Error, e:
             # Better to just have some leftovers then to fail
-            warnings.warn(u'An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
+            warnings.warn('An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
         try:
             LegalReasonRelatedObject.objects.filter(object_id=obj_id, object_content_type=self.content_type).delete()
         except Error, e:
             # Better to just have some leftovers then to fail
-            warnings.warn(u'An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
+            warnings.warn('An exception {} occurred during cleanup of {}'.format((unicode(e)), (unicode(self))))
 
 
 class AnonymizationModel(AnonymizationModelMixin, Model):
