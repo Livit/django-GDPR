@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import math
 
 import pyprind
@@ -10,6 +11,7 @@ from gdpr.anonymizers import DeleteModelAnonymizer
 from gdpr.loading import anonymizer_register
 
 
+# TODO fix commands
 class Command(BaseCommand):
     help = u'Anonymize database data according to defined anonymizers in applications.'
 

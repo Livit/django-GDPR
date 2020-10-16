@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from tqdm import tqdm
@@ -6,6 +7,7 @@ from tqdm import tqdm
 from gdpr.models import LegalReason
 
 
+# TODO fix commands
 class Command(BaseCommand):
 
     @transaction.atomic

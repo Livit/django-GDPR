@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 from .generic_relation import GenericRelationAnonymizer, ReverseGenericRelationAnonymizer
 from .hash_fields import HashTextFieldAnonymizer, MD5TextFieldAnonymizer, SHA256TextFieldAnonymizer
 from .model_anonymizers import DeleteModelAnonymizer, ModelAnonymizer
