@@ -5,7 +5,7 @@ from gdpr.anonymizers.base import FieldAnonymizer
 
 
 class BaseHashTextFieldAnonymizer(FieldAnonymizer):
-    algorithm: str
+    algorithm = None
     is_reversible = False
 
     def get_encrypted_value(self, value: Any, encryption_key: str):

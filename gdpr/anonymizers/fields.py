@@ -1,11 +1,11 @@
+# -*- coding: future_fstrings -*-
+from __future__ import absolute_import
 import json
 from datetime import timedelta
-from typing import Any, Callable, Optional, Union
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.files.base import ContentFile, File
-from django.db.models.fields.files import FieldFile
 from django.utils.inspect import func_supports_parameter
 from unidecode import unidecode
 
@@ -13,12 +13,12 @@ from gdpr.anonymizers.base import FieldAnonymizer, NumericFieldAnonymizer
 from gdpr.encryption import (
     JSON_SAFE_CHARS, decrypt_email_address, decrypt_text, encrypt_email_address, encrypt_text, numerize_key,
     translate_iban, translate_number, translate_text)
-from gdpr.ipcypher import decrypt_ip, encrypt_ip
 from gdpr.utils import get_number_guess_len
+from io import open
 
 
 class FunctionFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Use this field anonymization for defining in place lambda anonymization method.
 
     Example:
@@ -34,42 +34,37 @@ class FunctionFieldAnonymizer(FieldAnonymizer):
         )
     ```
     """
-
-    anon_func: Callable
-    deanonymize_func: Optional[Callable] = None
-    max_anonymization_range: int
-
     def __init__(self,
-                 anon_func: Union[Callable[[Any, Any], Any], Callable[["FunctionFieldAnonymizer", Any, Any], Any]],
-                 deanonymize_func: Callable[["FunctionFieldAnonymizer", Any, Any], Any] = None,
-                 *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+                 anon_func,
+                 deanonymize_func = None,
+                 *args, **kwargs):
+        super(FunctionFieldAnonymizer, self).__init__(*args, **kwargs)
         if callable(anon_func):
             self.anon_func = anon_func  # type: ignore
         else:
-            raise ImproperlyConfigured('Supplied func is not callable.')
+            raise ImproperlyConfigured(u'Supplied func is not callable.')
 
         if callable(deanonymize_func):
             self.deanonymize_func = deanonymize_func
         elif deanonymize_func is not None:
-            raise ImproperlyConfigured('Supplied deanonymize_func is not callable.')
+            raise ImproperlyConfigured(u'Supplied deanonymize_func is not callable.')
 
-    def get_numeric_encryption_key(self, encryption_key: str) -> int:
+    def get_numeric_encryption_key(self, encryption_key):
         return numerize_key(encryption_key) % self.max_anonymization_range
 
-    def get_encrypted_value(self, value, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         if self.deanonymize_func is None:
             return self.anon_func(value, encryption_key)
         else:
             return self.anon_func(self, value, encryption_key)
 
-    def get_is_reversible(self, obj=None, raise_exception: bool = False):
+    def get_is_reversible(self, obj=None, raise_exception = False):
         is_reversible = self.deanonymize_func is not None
         if not is_reversible:
             raise self.IrreversibleAnonymizationException
         return is_reversible
 
-    def get_decrypted_value(self, value, encryption_key: str):
+    def get_decrypted_value(self, value, encryption_key):
         if not self.get_is_reversible():
             raise self.IrreversibleAnonymizationException()
         else:
@@ -77,37 +72,37 @@ class FunctionFieldAnonymizer(FieldAnonymizer):
 
 
 class DateTimeFieldAnonymizer(NumericFieldAnonymizer):
-    """
+    u"""
     Anonymization for DateTimeField.
 
     """
 
     max_anonymization_range = 365 * 24 * 60 * 60
 
-    def get_encrypted_value(self, value, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         return value - timedelta(seconds=(self.get_numeric_encryption_key(encryption_key) + 1))
 
-    def get_decrypted_value(self, value, encryption_key: str):
+    def get_decrypted_value(self, value, encryption_key):
         return value + timedelta(seconds=(self.get_numeric_encryption_key(encryption_key) + 1))
 
 
 class DateFieldAnonymizer(NumericFieldAnonymizer):
-    """
+    u"""
     Anonymization for DateField.
 
     """
 
     max_anonymization_range = 365
 
-    def get_encrypted_value(self, value, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         return value - timedelta(days=(self.get_numeric_encryption_key(encryption_key) + 1))
 
-    def get_decrypted_value(self, value, encryption_key: str):
+    def get_decrypted_value(self, value, encryption_key):
         return value + timedelta(days=(self.get_numeric_encryption_key(encryption_key) + 1))
 
 
 class CharFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Anonymization for CharField.
 
     transliterate - The CharFieldAnonymizer encrypts only ASCII chars and non-ascii chars are left the same e.g.:
@@ -115,102 +110,87 @@ class CharFieldAnonymizer(FieldAnonymizer):
     """
 
     transliterate = False
-    empty_values = [None, '']
+    empty_values = [None, u'']
 
-    def __init__(self, *args, transliterate: bool = False, **kwargs):
+    def __init__(self, *args, **kwargs):
+        if 'transliterate' in kwargs: transliterate = kwargs['transliterate']; del kwargs['transliterate']
+        else: transliterate =  False
         self.transliterate = transliterate
-        super().__init__(*args, **kwargs)
+        super(CharFieldAnonymizer, self).__init__(*args, **kwargs)
 
-    def get_encrypted_value(self, value, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         return encrypt_text(encryption_key, value if not self.transliterate else unidecode(value))
 
-    def get_decrypted_value(self, value, encryption_key: str):
+    def get_decrypted_value(self, value, encryption_key):
         return decrypt_text(encryption_key, value)
 
 
 class EmailFieldAnonymizer(FieldAnonymizer):
 
-    empty_values = [None, '']
+    empty_values = [None, u'']
 
-    def get_encrypted_value(self, value, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         return encrypt_email_address(encryption_key, value)
 
-    def get_decrypted_value(self, value, encryption_key: str):
+    def get_decrypted_value(self, value, encryption_key):
         return decrypt_email_address(encryption_key, value)
 
 
 class DecimalFieldAnonymizer(NumericFieldAnonymizer):
-    """
+    u"""
     Anonymization for CharField.
     """
 
-    def get_encrypted_value(self, value, encryption_key: str):
-        return translate_number(str(self.get_numeric_encryption_key(encryption_key)), value)
+    def get_encrypted_value(self, value, encryption_key):
+        return translate_number(unicode(self.get_numeric_encryption_key(encryption_key)), value)
 
-    def get_decrypted_value(self, value, encryption_key: str):
-        return translate_number(str(self.get_numeric_encryption_key(encryption_key)), value, encrypt=False)
+    def get_decrypted_value(self, value, encryption_key):
+        return translate_number(unicode(self.get_numeric_encryption_key(encryption_key)), value, encrypt=False)
 
 
 class IntegerFieldAnonymizer(NumericFieldAnonymizer):
-    """
+    u"""
     Anonymization for IntegerField.
     """
 
-    def get_encrypted_value(self, value, encryption_key: str):
-        return translate_number(str(self.get_numeric_encryption_key(encryption_key)), value)
+    def get_encrypted_value(self, value, encryption_key):
+        return translate_number(unicode(self.get_numeric_encryption_key(encryption_key)), value)
 
-    def get_decrypted_value(self, value, encryption_key: str):
-        return translate_number(str(self.get_numeric_encryption_key(encryption_key)), value, encrypt=False)
-
-
-class IPAddressFieldAnonymizer(FieldAnonymizer):
-    """
-    Anonymization for GenericIPAddressField.
-
-    Works for both ipv4 and ipv6.
-    """
-
-    empty_values = [None, '']
-
-    def get_encrypted_value(self, value, encryption_key: str):
-        return encrypt_ip(encryption_key, value)
-
-    def get_decrypted_value(self, value, encryption_key: str):
-        return decrypt_ip(encryption_key, value)
-
+    def get_decrypted_value(self, value, encryption_key):
+        return translate_number(unicode(self.get_numeric_encryption_key(encryption_key)), value, encrypt=False)
 
 class IBANFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Field anonymizer for International Bank Account Number.
     """
 
-    empty_values = [None, '']
+    empty_values = [None, u'']
 
-    def get_decrypted_value(self, value: Any, encryption_key: str):
+    def get_decrypted_value(self, value, encryption_key):
         return translate_iban(encryption_key, value)
 
-    def get_encrypted_value(self, value: Any, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         return translate_iban(encryption_key, value, False)
 
 
 class JSONFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Anonymization for JSONField.
     """
 
-    empty_values = [None, '']
+    empty_values = [None, u'']
 
-    def get_numeric_encryption_key(self, encryption_key: str, value: Union[int, float] = None) -> int:
+    def get_numeric_encryption_key(self, encryption_key, value = None):
         if value is None:
             return numerize_key(encryption_key)
         return numerize_key(encryption_key) % 10 ** get_number_guess_len(value)
 
-    def anonymize_json_value(self, value: Union[list, dict, bool, None, str, int, float],
-                             encryption_key: str,
-                             anonymize: bool = True) -> Union[list, dict, bool, None, str, int, float]:
+    def anonymize_json_value(self, value,
+                             encryption_key,
+                             anonymize = True):
         if value is None:
             return None
-        elif type(value) is str:
+        elif type(value) is unicode:
             return translate_text(encryption_key, value, anonymize, JSON_SAFE_CHARS)  # type: ignore
         elif type(value) is int:
             return translate_number(encryption_key, value, anonymize)  # type: ignore
@@ -218,69 +198,69 @@ class JSONFieldAnonymizer(FieldAnonymizer):
             # We cannot safely anonymize floats
             return value
         elif type(value) is dict:
-            return {key: self.anonymize_json_value(item, encryption_key, anonymize) for key, item in
-                    value.items()}  # type: ignore
+            return dict((key, self.anonymize_json_value(item, encryption_key, anonymize)) for key, item in
+                    value.items())  # type: ignore
         elif type(value) is list:
             return [self.anonymize_json_value(item, encryption_key, anonymize) for item in value]  # type: ignore
         elif type(value) is bool and self.get_numeric_encryption_key(encryption_key) % 2 == 0:
             return not value
         return value
 
-    def get_encrypted_value(self, value, encryption_key: str):
-        if type(value) not in [dict, list, str]:
-            raise ValidationError("JSONFieldAnonymizer encountered unknown type of json. "
-                                  "Only python dict and list are supported.")
-        if type(value) == str:
+    def get_encrypted_value(self, value, encryption_key):
+        if type(value) not in [dict, list, unicode]:
+            raise ValidationError(u"JSONFieldAnonymizer encountered unknown type of json. "
+                                  u"Only python dict and list are supported.")
+        if type(value) == unicode:
             return json.dumps(self.anonymize_json_value(json.loads(value), encryption_key))
         return self.anonymize_json_value(value, encryption_key)
 
-    def get_decrypted_value(self, value, encryption_key: str):
-        if type(value) not in [dict, list, str]:
-            raise ValidationError("JSONFieldAnonymizer encountered unknown type of json. "
-                                  "Only python dict and list are supported.")
-        if type(value) == str:
+    def get_decrypted_value(self, value, encryption_key):
+        if type(value) not in [dict, list, unicode]:
+            raise ValidationError(u"JSONFieldAnonymizer encountered unknown type of json. "
+                                  u"Only python dict and list are supported.")
+        if type(value) == unicode:
             return json.dumps(self.anonymize_json_value(json.loads(value), encryption_key, anonymize=False))
         return self.anonymize_json_value(value, encryption_key, anonymize=False)
 
 
 class StaticValueFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Static value anonymizer replaces value with defined static value.
     """
 
     is_reversible = False
-    empty_values = [None, '']
+    empty_values = [None, u'']
 
-    def __init__(self, value: Any, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.value: Any = value
+    def __init__(self, value, *args, **kwargs):
+        super(StaticValueFieldAnonymizer, self).__init__(*args, **kwargs)
+        self.value = value
 
-    def get_encrypted_value(self, value: Any, encryption_key: str) -> Any:
+    def get_encrypted_value(self, value, encryption_key):
         return self.value
 
 
 class SiteIDUsernameFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Encrypts username in format 1:foo@bar.com
     """
 
-    empty_values = [None, '']
+    empty_values = [None, u'']
 
-    def get_encrypted_value(self, value, encryption_key: str):
-        split = value.split(':', 1)
+    def get_encrypted_value(self, value, encryption_key):
+        split = value.split(u':', 1)
         if len(split) == 2:
-            return f'{split[0]}:{encrypt_email_address(encryption_key, split[1])}'
+            return u'{}:{}'.format((split[0]), (encrypt_email_address(encryption_key, split[1])))
         return encrypt_email_address(encryption_key, value)
 
-    def get_decrypted_value(self, value, encryption_key: str):
-        split = value.split(':', 1)
+    def get_decrypted_value(self, value, encryption_key):
+        split = value.split(u':', 1)
         if len(split) == 2:
-            return f'{split[0]}:{decrypt_email_address(encryption_key, split[1])}'
+            return u'{}:{}'.format((split[0]), (decrypt_email_address(encryption_key, split[1])))
         return decrypt_email_address(encryption_key, value)
 
 
 class FileFieldAnonymizer(FieldAnonymizer):
-    """
+    u"""
     Base class for all FileFieldAnonymizers.
 
     Overrides ``get_is_value_empty`` to check for files.
@@ -291,44 +271,44 @@ class FileFieldAnonymizer(FieldAnonymizer):
 
 
 class DeleteFileFieldAnonymizer(FileFieldAnonymizer):
-    """
+    u"""
     One way anonymization of FileField.
     """
 
     is_reversible = False
 
-    def get_encrypted_value(self, value: Any, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         value.delete(save=False)
         return value
 
 
 class ReplaceFileFieldAnonymizer(FileFieldAnonymizer):
-    """
+    u"""
     One way anonymization of FileField.
     """
 
     is_reversible = False
-    replacement_file: Optional[str] = None
+    replacement_file = None
 
-    def __init__(self, replacement_file: Optional[str] = None, *args, **kwargs):
+    def __init__(self, replacement_file = None, *args, **kwargs):
         if replacement_file is not None:
             self.replacement_file = replacement_file
-        super().__init__(*args, **kwargs)
+        super(ReplaceFileFieldAnonymizer, self).__init__(*args, **kwargs)
 
     def get_replacement_file(self):
         if self.replacement_file is not None:
-            return File(open(self.replacement_file, "rb"))
-        elif getattr(settings, "GDPR_REPLACE_FILE_PATH", None) is not None:
-            return File(open(getattr(settings, "GDPR_REPLACE_FILE_PATH"), "rb"))
+            return File(open(self.replacement_file, u"rb"))
+        elif getattr(settings, u"GDPR_REPLACE_FILE_PATH", None) is not None:
+            return File(open(getattr(settings, u"GDPR_REPLACE_FILE_PATH"), u"rb"))
         else:
-            return ContentFile("THIS FILE HAS BEEN ANONYMIZED.")
+            return ContentFile(u"THIS FILE HAS BEEN ANONYMIZED.")
 
-    def get_encrypted_value(self, value: FieldFile, encryption_key: str):
+    def get_encrypted_value(self, value, encryption_key):
         file_name = value.name
         value.delete(save=False)
         file = self.get_replacement_file()
 
-        if func_supports_parameter(value.storage.save, 'max_length'):
+        if func_supports_parameter(value.storage.save, u'max_length'):
             value.name = value.storage.save(file_name, file, max_length=value.field.max_length)
         else:
             #  Backwards compatibility removed in Django 1.10

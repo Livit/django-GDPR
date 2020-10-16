@@ -1,4 +1,5 @@
-"""
+# -*- coding: future_fstrings -*-
+u"""
 Models for test app:
 
 Customer
@@ -8,6 +9,7 @@ Customer
     - Payment
 
 """
+from __future__ import absolute_import
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -30,29 +32,29 @@ class Customer(AnonymizationModel):
     phone_number = models.CharField(max_length=9, blank=True, null=True)
     facebook_id = models.CharField(
         max_length=256, blank=True, null=True,
-        verbose_name=_("Facebook ID"), help_text=_("Facebook ID used for login via Facebook."))
+        verbose_name=_(u"Facebook ID"), help_text=_(u"Facebook ID used for login via Facebook."))
     last_login_ip = models.GenericIPAddressField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        """Just helper method for saving full name.
+        u"""Just helper method for saving full name.
 
         You can ignore this method.
         """
-        self.full_name = "%s %s" % (self.first_name, self.last_name)
-        super().save(*args, **kwargs)
+        self.full_name = u"%s %s" % (self.first_name, self.last_name)
+        super(Customer, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return u"{} {}".format((self.first_name), (self.last_name))
 
 
 class Email(AnonymizationModel):
-    """Example on anonymization on related field."""
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="emails")
+    u"""Example on anonymization on related field."""
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name=u"emails")
     email = models.EmailField(blank=True, null=True)
 
 
 class Address(AnonymizationModel):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="addresses")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name=u"addresses")
     street = models.CharField(max_length=256, blank=True, null=True)
     house_number = models.CharField(max_length=20, blank=True, null=True)
     city = models.CharField(max_length=256, blank=True, null=True)
@@ -60,7 +62,7 @@ class Address(AnonymizationModel):
 
 
 class Account(AnonymizationModel):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="accounts")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name=u"accounts")
     number = models.CharField(max_length=256, blank=True, null=True, validators=[BankAccountValidator])
     IBAN = models.CharField(max_length=34, blank=True, null=True)
     swift = models.CharField(max_length=11, blank=True, null=True)
@@ -68,8 +70,8 @@ class Account(AnonymizationModel):
 
 
 class Payment(AnonymizationModel):
-    """Down the rabbit hole multilevel relations."""
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="payments")
+    u"""Down the rabbit hole multilevel relations."""
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name=u"payments")
     value = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=10)
     date = models.DateField(auto_now_add=True)
 
@@ -83,11 +85,11 @@ class Note(AnonymizationModel):
     note = models.TextField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey(u'content_type', u'object_id')
 
 
 class Avatar(AnonymizationModel):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="avatars")
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name=u"avatars")
     image = models.FileField()
 
 
@@ -123,7 +125,7 @@ if is_reversion_installed():
     reversion.register(ContactForm)
     reversion.register(Note)
     reversion.register(TopParentA)
-    reversion.register(ParentB, follow=('topparenta_ptr',))
-    reversion.register(ParentC, follow=('parentb_ptr',))
+    reversion.register(ParentB, follow=(u'topparenta_ptr',))
+    reversion.register(ParentC, follow=(u'parentb_ptr',))
     reversion.register(ExtraParentD)
-    reversion.register(ChildE, follow=('parentc_ptr', 'extraparentd_ptr'))
+    reversion.register(ChildE, follow=(u'parentc_ptr', u'extraparentd_ptr'))
