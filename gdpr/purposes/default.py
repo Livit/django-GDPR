@@ -1,8 +1,8 @@
 from __future__ import absolute_import
-from typing import TYPE_CHECKING, Any, Dict, KeysView, List, Optional, Tuple, Type, Union
 
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
+from typing import Any, Dict, KeysView, List, Tuple, Union
 
 from gdpr.enums import LegalReasonState
 from gdpr.fields import Fields

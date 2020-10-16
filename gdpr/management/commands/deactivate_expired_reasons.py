@@ -1,10 +1,8 @@
 from django.core.management.base import BaseCommand
-
-from gdpr.models import LegalReason
-
+from django.db import transaction
 from tqdm import tqdm
 
-from django.db import transaction
+from gdpr.models import LegalReason
 
 
 class Command(BaseCommand):

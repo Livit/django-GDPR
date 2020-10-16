@@ -1,5 +1,7 @@
 from __future__ import absolute_import
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type, Union
+
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union
+
 from gdpr.loading import anonymizer_register
 
 FieldMatrix = Union[unicode, Tuple[Any, ...]]
@@ -7,7 +9,7 @@ FieldList = Union[List[unicode], unicode]
 RelatedFieldDict = Dict[unicode, u"Fields"]
 
 if TYPE_CHECKING:
-    from gdpr.anonymizers import ModelAnonymizer
+    pass
 
 
 class Fields(object):

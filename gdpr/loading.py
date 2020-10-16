@@ -1,14 +1,15 @@
 # -*- coding: future_fstrings -*-
 from __future__ import absolute_import
+
 from collections import OrderedDict
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, Generic, Iterator, Optional, Type, TypeVar, Union
 
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Model
 from django.utils.encoding import force_text
+from typing import Generic, Type, TypeVar
 
 from .utils import str_to_class
 

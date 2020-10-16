@@ -1,5 +1,6 @@
 # -*- coding: future_fstrings -*-
 from __future__ import absolute_import
+
 import warnings
 
 from django.contrib.contenttypes.models import ContentType

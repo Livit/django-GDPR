@@ -1,18 +1,19 @@
 # -*- coding: future_fstrings -*-
-from __future__ import with_statement
 from __future__ import absolute_import
+from __future__ import with_statement
+
 import hashlib
 import random
 import string
 import warnings
-from typing import (
-    Any, KeysView, List, Tuple, Union
-)
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.db import transaction
+from typing import (
+    Any, KeysView, List, Tuple, Union
+)
 
 from gdpr.anonymizers.base import FieldAnonymizer, RelationAnonymizer
 from gdpr.fields import Fields

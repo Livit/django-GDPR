@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from typing import Optional
 
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
