@@ -122,3 +122,5 @@ dmypy.json
 *.tmp
 *.pyc
 *~
+
+.local_env
