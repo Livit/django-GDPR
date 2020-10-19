@@ -1,8 +1,10 @@
 from __future__ import absolute_import
+
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from faker import Faker
 
+from gdpr.enums import LegalReasonState
 from gdpr.models import LegalReason
 from tests.models import Customer
 from tests.purposes import (
@@ -23,7 +25,7 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
         cls.customer = Customer(**CUSTOMER__KWARGS)
         cls.customer.save()
 
-    def test_create_legal_reson_from_slug(self):
+    def test_create_legal_reason_from_slug(self):
         LegalReason.objects.create_consent(FIRST_AND_LAST_NAME_SLUG, self.customer).save()
 
         self.assertTrue(LegalReason.objects.filter(
@@ -31,8 +33,13 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
             source_object_content_type=ContentType.objects.get_for_model(Customer)).exists())
 
     def test_expirement_legal_reason(self):
+        """
+        When the Legal Reason expires, respective data gets anonymized
+        """
         legal = LegalReason.objects.create_consent(FIRST_AND_LAST_NAME_SLUG, self.customer)
+        self.assertEqual(legal.state, LegalReasonState.ACTIVE)
         legal.expire()
+        self.assertEqual(legal.state, LegalReasonState.EXPIRED)
 
         anon_customer = Customer.objects.get(pk=self.customer.pk)
 
@@ -48,6 +55,7 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
         legal = LegalReason.objects.create_consent(FIRST_AND_LAST_NAME_SLUG, self.customer)
         legal.expire()
         legal.renew()
+        self.assertEqual(legal.state, LegalReasonState.ACTIVE)
 
         anon_customer = Customer.objects.get(pk=self.customer.pk)
 
@@ -56,5 +64,3 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
         self.assertAnonymizedDataExists(anon_customer, u"first_name")
         self.assertNotEqual(anon_customer.last_name, CUSTOMER__LAST_NAME)
         self.assertAnonymizedDataExists(anon_customer, u"last_name")
-
-# TODO add tests for our particular business case here

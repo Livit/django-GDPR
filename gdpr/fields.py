@@ -13,10 +13,10 @@ class Fields(object):
 
     def parse_local_fields(self, fields):
         u"""Get Iterable of local fields from fields matrix."""
-        if fields == u'__ALL__' or (u'__ALL__' in fields and type(fields) != unicode):
+        if fields == u'__ALL__' or (u'__ALL__' in fields and type(fields) not in (unicode, str)):
             return list(self.anonymizer.keys())
 
-        return [field for field in fields if type(field) == unicode]
+        return [field for field in fields if type(field) in (unicode, str)]
 
     def parse_related_fields(self, fields):
         u"""Get Dictionary of related fields from fields matrix."""
