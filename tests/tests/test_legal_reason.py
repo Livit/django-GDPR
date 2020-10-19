@@ -1,8 +1,12 @@
 from __future__ import absolute_import
 
+import datetime
+
+from dateutil.relativedelta import relativedelta
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from faker import Faker
+from freezegun import freeze_time
 
 from gdpr.enums import LegalReasonState
 from gdpr.models import LegalReason
@@ -98,3 +102,55 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
         # make sure only data we want were anonymized
         self.assertEqual(customer.primary_email_address, CUSTOMER__EMAIL)
         self.assertAnonymizedDataNotExists(customer, u"primary_email_address")
+
+    def test_expire_old_consents_positive(self):
+        """
+        1. Create a consent
+        2. Let it get old by mocking time
+        3. run LegalReason.objects.expire_old_consents() and make sure it expired
+            and data got anonymized.
+        """
+        customer = Customer.objects.get(pk=self.customer.pk)
+        customer.create_consent(FIRST_AND_LAST_NAME_SLUG)
+
+        # some time travel stuff from grandpa's garage
+        now = datetime.datetime.now()
+        future = now + relativedelta(years=10, days=1)
+
+        with freeze_time(future):
+            LegalReason.objects.expire_old_consents()
+
+            # names should be anonymized
+            customer = Customer.objects.get(pk=self.customer.pk)
+            self.assertNotEqual(customer.first_name, CUSTOMER__FIRST_NAME)
+            self.assertAnonymizedDataExists(customer, u"first_name")
+            self.assertNotEqual(customer.last_name, CUSTOMER__LAST_NAME)
+            self.assertAnonymizedDataExists(customer, u"last_name")
+            # make sure only data we want were anonymized
+            self.assertEqual(customer.primary_email_address, CUSTOMER__EMAIL)
+            self.assertAnonymizedDataNotExists(customer, u"primary_email_address")
+
+    def test_expire_old_consents_too_early(self):
+        """
+        1. Create a consent
+        2. Let it get old by mocking time, by too young to expire
+        3. run LegalReason.objects.expire_old_consents() and make sure it DID NOT expire
+        """
+        customer = Customer.objects.get(pk=self.customer.pk)
+        customer.create_consent(FIRST_AND_LAST_NAME_SLUG)
+
+        # some time travel stuff from grandpa's garage
+        now = datetime.datetime.now()
+        future = now + relativedelta(years=9, days=363)
+
+        with freeze_time(future):
+            LegalReason.objects.expire_old_consents()
+
+            # names should be anonymized
+            customer = Customer.objects.get(pk=self.customer.pk)
+            self.assertEqual(customer.first_name, CUSTOMER__FIRST_NAME)
+            self.assertAnonymizedDataNotExists(customer, u"first_name")
+            self.assertEqual(customer.last_name, CUSTOMER__LAST_NAME)
+            self.assertAnonymizedDataNotExists(customer, u"last_name")
+            self.assertEqual(customer.primary_email_address, CUSTOMER__EMAIL)
+            self.assertAnonymizedDataNotExists(customer, u"primary_email_address")
