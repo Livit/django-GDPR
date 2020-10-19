@@ -64,3 +64,37 @@ class TestLegalReason(AnonymizedDataMixin, NotImplementedMixin, TestCase):
         self.assertAnonymizedDataExists(anon_customer, u"first_name")
         self.assertNotEqual(anon_customer.last_name, CUSTOMER__LAST_NAME)
         self.assertAnonymizedDataExists(anon_customer, u"last_name")
+
+    def test_object_interface(self):
+        """
+        Create a consent and deactivate it, using AnonymizationModel mixin interface
+        """
+        customer = Customer.objects.get(pk=self.customer.pk)
+        self.assertEqual(0, len(customer.get_consents()))
+        #
+        # create a consent
+        #
+        customer.create_consent(FIRST_AND_LAST_NAME_SLUG)
+        self.assertEqual(1, len(customer.get_consents()))
+        self.assertEqual(1, LegalReason.objects.count())
+
+        legal = LegalReason.objects.first()
+
+        self.assertEqual(legal.state, LegalReasonState.ACTIVE)
+
+        #
+        # deactivate (this equals lega.expire(), just a more handy interface
+        #
+        customer.deactivate_consent(FIRST_AND_LAST_NAME_SLUG)
+        legal = LegalReason.objects.first()
+        self.assertEqual(legal.state, LegalReasonState.DEACTIVATED)
+
+        # deactivation should result in anonymization
+        customer = Customer.objects.get(pk=self.customer.pk)
+        self.assertNotEqual(customer.first_name, CUSTOMER__FIRST_NAME)
+        self.assertAnonymizedDataExists(customer, u"first_name")
+        self.assertNotEqual(customer.last_name, CUSTOMER__LAST_NAME)
+        self.assertAnonymizedDataExists(customer, u"last_name")
+        # make sure only data we want were anonymized
+        self.assertEqual(customer.primary_email_address, CUSTOMER__EMAIL)
+        self.assertAnonymizedDataNotExists(customer, u"primary_email_address")
