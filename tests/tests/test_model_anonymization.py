@@ -1,11 +1,9 @@
 from __future__ import absolute_import
+
 from django.test import TestCase
 
 from tests.models import Customer
-from .data import (
-    CUSTOMER__BIRTH_DATE, CUSTOMER__EMAIL, CUSTOMER__FACEBOOK_ID, CUSTOMER__FIRST_NAME, CUSTOMER__IP, CUSTOMER__KWARGS,
-    CUSTOMER__LAST_NAME,
-    CUSTOMER__PERSONAL_ID, CUSTOMER__PHONE_NUMBER)
+from .data import (CUSTOMER__FIRST_NAME, CUSTOMER__KWARGS, CUSTOMER__LAST_NAME)
 from .utils import AnonymizedDataMixin, NotImplementedMixin
 
 
@@ -24,14 +22,6 @@ class TestModelAnonymization(AnonymizedDataMixin, NotImplementedMixin, TestCase)
         self.assertAnonymizedDataExists(anon_customer, u'first_name')
         self.assertNotEqual(anon_customer.last_name, CUSTOMER__LAST_NAME)
         self.assertAnonymizedDataExists(anon_customer, u'last_name')
-        self.assertNotEqual(anon_customer.primary_email_address, CUSTOMER__EMAIL)
-        self.assertAnonymizedDataExists(anon_customer, u'primary_email_address')
-        self.assertNotEquals(anon_customer.birth_date, CUSTOMER__BIRTH_DATE)
-        self.assertAnonymizedDataExists(anon_customer, u'first_name')
-        self.assertNotEquals(anon_customer.facebook_id, CUSTOMER__FACEBOOK_ID)
-        self.assertAnonymizedDataExists(anon_customer, u'first_name')
-        self.assertNotEqual(unicode(anon_customer.last_login_ip), CUSTOMER__IP)
-        self.assertAnonymizedDataExists(anon_customer, u'first_name')
 
     def test_anonymization_of_anonymized_data(self):
         u'''Test that anonymized data are not anonymized again.'''
