@@ -9,7 +9,7 @@ It is confirmed to work with:
 
 ## Installation:
 - add to requirements:
-    - `git+ssh://git@github.com/Livit/django-GDPR@0.2.12-python2`
+    - `git+ssh://git@github.com/Livit/django-GDPR.git@0.2.12-python2`
     - `git+ssh://git@github.com/druids/django-chamber.git@0.3.9`
 - add to `INSTALLED_APPS`: 
     - `gdpr`
@@ -28,6 +28,8 @@ Confirmed to work:
 5. You should now be able to run tests: `python runtests.py`
 
 ## Summary of changes in this fork:
+- no changes to the data model. This means future migration to the upstream python3
+version should be theoretically as easy as changing deps links and running `manage.py migrate`
 - ran `3to2` utility on entire project
 - removed typing instructions that were incompatible with python2
 - removed vast majority of functionality except simple hash-based anonymizers 
