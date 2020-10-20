@@ -1,32 +1,32 @@
-from typing import Callable
+from __future__ import absolute_import
+from __future__ import print_function
 
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Model
 from django.test import TestCase
 
 from gdpr.models import AnonymizedData
 
 
 class NotImplementedMixin(TestCase):
-    def assertNotImplemented(self, func: Callable, *args, **kwargs) -> None:
+    def assertNotImplemented(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
-        except AssertionError as exc:
-            print("NOT IMPLEMENTED:", self.id(), exc)
+        except AssertionError, exc:
+            print(u"NOT IMPLEMENTED: {} {}".format(self.id(), exc))
         else:
-            raise AssertionError("Function Implemented successfully!!")
+            raise AssertionError(u"Function Implemented successfully!!")
 
     def assertNotImplementedNotEqual(self, *args, **kwargs):
         self.assertNotImplemented(self.assertNotEqual, *args, **kwargs)
 
 
 class AnonymizedDataMixin(TestCase):
-    def assertAnonymizedDataExists(self, obj: Model, field: str):
+    def assertAnonymizedDataExists(self, obj, field):
         content_type = ContentType.objects.get_for_model(obj.__class__)
         self.assertTrue(
-            AnonymizedData.objects.filter(content_type=content_type, object_id=str(obj.pk), field=field).exists())
+            AnonymizedData.objects.filter(content_type=content_type, object_id=unicode(obj.pk), field=field).exists())
 
-    def assertAnonymizedDataNotExists(self, obj: Model, field: str):
+    def assertAnonymizedDataNotExists(self, obj, field):
         content_type = ContentType.objects.get_for_model(obj.__class__)
         self.assertFalse(
-            AnonymizedData.objects.filter(content_type=content_type, object_id=str(obj.pk), field=field).exists())
+            AnonymizedData.objects.filter(content_type=content_type, object_id=unicode(obj.pk), field=field).exists())

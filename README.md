@@ -1,4 +1,49 @@
-# Django-GDPR [![Build Status](https://travis-ci.org/BrnoPCmaniak/django-GDPR.svg?branch=develop)](https://travis-ci.org/BrnoPCmaniak/django-GDPR)
+# Django-GDPR (python 2)
+
+**This is a Python2 fork with extremely cut-down functionality.**  
+It is intended for legacy django applications.   
+It is confirmed to work with:
+- python 2.7.14
+- django 1.11.29
+- MD5 anonymizer and upstream API in general confirmed to work fine
+
+## Installation:
+- add to requirements:
+    - `git+ssh://git@github.com/Livit/django-GDPR@0.2.12-python2`
+    - `git+ssh://git@github.com/druids/django-chamber.git@0.3.9`
+- add to `INSTALLED_APPS`: 
+    - `gdpr`
+- run `python manage.py migrate`
+
+## Brief user manual for devs:
+1. set up venv with python2.7. This can be tricky due to problems with old 
+versions of `virtualenv` and general lack of support for python2 in 2020.  
+Confirmed to work: 
+    1. install desired python2 version with [pyenv](https://github.com/pyenv/pyenv)
+    2. using `virtualenv` installed in some other python3 environment, create
+    python2 environment: ` ~/.pyenv/versions/3.7.8-system/bin/virtualenv --python="/Users/fred/.pyenv/versions/2.7.14/bin/python" .local_env` 
+2. `source .local_env/bin/activate`
+3. `pip install -r test_requirements.txt` 
+4. `pip install -r requirements.txt` 
+5. You should now be able to run tests: `python runtests.py`
+
+## Summary of changes in this fork:
+- ran `3to2` utility on entire project
+- removed typing instructions that were incompatible with python2
+- removed vast majority of functionality except simple hash-based anonymizers 
+- especially removed custom **cryptography** utils from upstream project
+- added `future-fstrings` libary
+- removed `enumfields` that were incompatible with python2. Added `enum34` 
+and refactored `LegalReasonState` class to use it. 
+- identified `django-chamber==0.3.9` as the last compatible with python2 and us it
+instead of current version that is python3-only
+- added a few tests for critically needed functionality
+- a few minor fixes here and there, that resulted from 3to2 conversion
+
+
+The rest of the documentation below is **left unchanged**. 
+
+--------------
 
 This library enables you to store user's consent for data retention easily
 and to anonymize/deanonymize user's data accordingly.

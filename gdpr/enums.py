@@ -1,10 +1,9 @@
-from django.utils.translation import ugettext_lazy as _
+from __future__ import absolute_import
 
-from enumfields import Choice, ChoiceEnum
+from enum import IntEnum
 
 
-class LegalReasonState(ChoiceEnum):
-
-    ACTIVE = Choice(1, _('Active'))
-    EXPIRED = Choice(2, _('Expired'))
-    DEACTIVATED = Choice(3, _('Deactivated'))
+class LegalReasonState(IntEnum):
+    ACTIVE = 1
+    EXPIRED = 2
+    DEACTIVATED = 3
