@@ -3,4 +3,5 @@ VERSION = (0, 2, 12)
 
 
 def get_version():
-    return u'.'.join(imap(unicode, VERSION))
+    base = u'.'.join(imap(unicode, VERSION))
+    return base + '-python2'

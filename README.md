@@ -9,9 +9,11 @@ It is confirmed to work with:
 
 ## Installation:
 - add to requirements:
-    - TODO this repo link
+    - `git+ssh://git@github.com/Livit/django-GDPR@0.2.12-python2`
     - `git+ssh://git@github.com/druids/django-chamber.git@0.3.9`
-
+- add to `INSTALLED_APPS`: 
+    - `gdpr`
+- run `python manage.py migrate`
 
 ## Brief user manual for devs:
 1. set up venv with python2.7. This can be tricky due to problems with old 
