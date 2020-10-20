@@ -35,11 +35,15 @@ setup(
     ],
     install_requires=[
         'django>=1.8, <2',
-        'django-chamber @ git+ssh://git@github.com/druids/django-chamber.git#egg=django-chamber-0.3.9',
+        # 'django-chamber==0.3.9',  # pip refuses to install, has to be installed separately by requirements
         'enum34>=1.1.10',
         'future-fstrings>=1.2.0',
         'python-dateutil>=2.8.0',
         'tqdm>=4.28.1',
+    ],
+    dependency_links=[
+        # Make sure to include the `#egg` portion so the `install_requires` recognizes the package
+        # 'git+ssh://git@github.com/druids/django-chamber.git@0.3.9#egg=django-chamber-0.3.9',
     ],
     zip_safe=False,
 )
